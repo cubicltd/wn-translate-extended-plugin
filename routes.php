@@ -21,19 +21,19 @@ App::before(function($request) {
         return;
 
     $locale = $translator->loadLocaleFromRequest() ? $translator->getLocale() : null;
-    
+
     if(Settings::get('route_prefixing', true)) {
 
         if($locale){
             Route::group(['prefix' => $locale, 'middleware' => 'web'], function() {
-                Route::any('{slug}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
+                Route::any('{slug?}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
             });
 
             Route::any($locale, 'Cms\Classes\CmsController@run')->middleware('web');
 
             Event::listen('cms.route', function() use ($locale) {
                 Route::group(['prefix' => $locale, 'middleware' => 'web'], function() {
-                    Route::any('{slug}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
+                    Route::any('{slug?}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
                 });
             });
         }
@@ -53,7 +53,7 @@ App::before(function($request) {
                 return redirect($redirect);
             })->where('any', '.*');
         }
-        
+
     }
 });
 
