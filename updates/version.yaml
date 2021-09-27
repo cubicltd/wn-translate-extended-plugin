@@ -12,3 +12,5 @@
     - Support for translated page URLs. Fix for switcher for pages in subdirectory of domain
 1.0.7:
     - Specified 'web' middleware for Laravel 5.5 support
+1.0.8:
+    - makes slug parameter optional
