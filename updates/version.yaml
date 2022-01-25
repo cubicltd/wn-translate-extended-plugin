@@ -14,3 +14,5 @@
     - Specified 'web' middleware for Laravel 5.5 support
 1.0.8:
     - makes slug parameter optional
+1.0.9:
+    - attaches query string on homepage redirect
