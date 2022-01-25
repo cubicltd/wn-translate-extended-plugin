@@ -39,8 +39,12 @@ App::before(function($request) {
         }
 
         if(Settings::get('homepage_redirect', true)) {
-            Route::get('/', function() use($translator) {
-                return redirect($translator->getLocale());
+            Route::get('/', function() use($translator, $request) {
+                $redirect = $translator->getLocale();
+                if ($request->query()) {
+                    $redirect .= '?' . http_build_query($request->query());
+                }
+                return redirect($redirect);
             })->middleware(['web', ExtendedLocaleMiddleware::class]);
         }
 
