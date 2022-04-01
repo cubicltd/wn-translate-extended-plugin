@@ -20,26 +20,27 @@ App::before(function($request) {
     if (!$translator->isConfigured())
         return;
 
-    $locale = $translator->loadLocaleFromRequest() ? $translator->getLocale() : null;
+    $locale = null;
 
     if ($queryParam = trim(Settings::get('query_param', ''))) {
-        $queryLocale = trim($request->get($queryParam));
+        $locale = trim($request->get($queryParam));
 
-        if ($queryLocale && $locale !== $queryLocale) {
-            $translator->setLocale($queryLocale);
+        if ($locale) {
+            $translator->setLocale($locale);
         }
     }
 
-    if ($header = trim(Settings::get('header', ''))) {
-        $headerLocale = trim($request->header($header));
+    if (!$locale && $header = trim(Settings::get('header', ''))) {
+        $locale = trim($request->header($header));
 
-        if ($headerLocale && $locale !== $headerLocale) {
-            $translator->setLocale($headerLocale);
+        if ($locale) {
+            $translator->setLocale($locale);
         }
     }
+
+    $locale = $locale ? $locale : ($translator->loadLocaleFromRequest() ? $translator->getLocale() : null);
 
     if (Settings::get('route_prefixing', true)) {
-
         if ($locale){
             Route::group(['prefix' => $locale, 'middleware' => 'web'], function() {
                 Route::any('{slug?}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
