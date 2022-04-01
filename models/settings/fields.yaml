@@ -13,6 +13,14 @@ fields:
     comment: studiobosco.translateextended::lang.strings.prefer_user_session_comment
     type: switch
     default: true
+  query_param:
+    label: studiobosco.translateextended::lang.strings.query_param
+    comment: studiobosco.translateextended::lang.strings.query_param_comment
+    span: left
+  header:
+    label: studiobosco.translateextended::lang.strings.header
+    comment: studiobosco.translateextended::lang.strings.header_comment
+    span: right
   route_prefixing:
     label: studiobosco.translateextended::lang.strings.route_prefixing
     comment: studiobosco.translateextended::lang.strings.route_prefixing_comment

@@ -8,6 +8,10 @@ return [
         'settings_desc'             => 'Manage the settings for the Translate Extended.',
         'browser_language_detection'           => 'Browser language detection',
         'browser_language_detection_comment'   => 'Enables translating website in the preferred browser language.',
+        'query_param' => 'Query-Parameter',
+        'query_param_comment' => 'If set, will use the provided query parameter to detect the locale.',
+        'header' => 'Header',
+        'header_comment' => 'If set, will use the provided header to detect the locale',
         'route_prefixing'            => 'Route prefixing',
         'route_prefixing_comment'    => 'Enables locale prefixes in the route URL.',
         'prefer_user_session'           => 'Prefer user session over auto detected language',
@@ -19,7 +23,7 @@ return [
         'localepicker_desc'             => 'Shows list of links to change front-end language.'
     ],
     'permissions' => [
-        'tab'      => 'StudioBosco',
+        'tab'      => 'Translate Extended',
         'settings' => 'Access settings',
     ],
 ];

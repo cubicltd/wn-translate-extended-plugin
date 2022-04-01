@@ -22,9 +22,25 @@ App::before(function($request) {
 
     $locale = $translator->loadLocaleFromRequest() ? $translator->getLocale() : null;
 
-    if(Settings::get('route_prefixing', true)) {
+    if ($queryParam = trim(Settings::get('query_param', ''))) {
+        $queryLocale = trim($request->get($queryParam));
 
-        if($locale){
+        if ($queryLocale && $locale !== $queryLocale) {
+            $translator->setLocale($queryLocale);
+        }
+    }
+
+    if ($header = trim(Settings::get('header', ''))) {
+        $headerLocale = trim($request->header($header));
+
+        if ($headerLocale && $locale !== $headerLocale) {
+            $translator->setLocale($headerLocale);
+        }
+    }
+
+    if (Settings::get('route_prefixing', true)) {
+
+        if ($locale){
             Route::group(['prefix' => $locale, 'middleware' => 'web'], function() {
                 Route::any('{slug?}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
             });
@@ -38,7 +54,7 @@ App::before(function($request) {
             });
         }
 
-        if(Settings::get('homepage_redirect', true)) {
+        if (Settings::get('homepage_redirect', true)) {
             Route::get('/', function() use($translator, $request) {
                 $redirect = $translator->getLocale();
                 if ($request->query()) {
@@ -57,7 +73,5 @@ App::before(function($request) {
                 return redirect($redirect);
             })->where('any', '.*');
         }
-
     }
 });
-

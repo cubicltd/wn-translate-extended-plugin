@@ -11,4 +11,4 @@ class Settings extends Model{
     public $settingsCode = 'studiobosco_translateextended_settings';
 
     public $settingsFields = 'fields.yaml';
-} 
+}
