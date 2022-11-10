@@ -1,7 +1,11 @@
 <?php namespace StudioBosco\TranslateExtended;
 
+use App;
+use Route;
 use System\Classes\PluginBase;
-use URL;
+use Winter\Translate\Classes\Translator;
+use StudioBosco\TranslateExtended\Classes\ExtendedLocaleMiddleware;
+use StudioBosco\TranslateExtended\Models\Settings;
 
 /**
  * Translate Extended Plugin Information File
@@ -28,6 +32,65 @@ class Plugin extends PluginBase
      * @var array Plugin dependencies
      */
     public $require = ['Winter.Translate'];
+
+    public function boot()
+    {
+        if (!App::runningInBackend()) {
+            $this->registerRouting();
+        }
+    }
+
+    protected function registerRouting()
+    {
+        $translator = Translator::instance();
+        if (!$translator->isconfigured()) {
+            return;
+        }
+        $request = request();
+        $locale = null;
+
+        if ($queryParam = trim(Settings::get('query_param', ''))) {
+            $locale = trim($request->get($queryParam));
+
+            if ($locale) {
+                $translator->setLocale($locale);
+            }
+        }
+
+        if (!$locale && $header = trim(Settings::get('header', ''))) {
+            $locale = trim($request->header($header));
+
+            if ($locale) {
+                $translator->setLocale($locale);
+            }
+        }
+
+        $locale = $locale ? $locale : ($translator->loadLocaleFromRequest() ? $translator->getLocale() : null);
+
+        Route::middleware(['web', ExtendedLocaleMiddleware::class])->group(function () use ($translator, $request) {
+            if (Settings::get('route_prefixing', true)) {
+                if (Settings::get('homepage_redirect', true)) {
+                    Route::get('/', function () use ($translator, $request) {
+                        $redirect = '/' . $translator->getLocale();
+                        if ($request->query()) {
+                            $redirect .= '?' . http_build_query($request->query());
+                        }
+                        return redirect($redirect);
+                    });
+                }
+            }
+
+            if (Settings::get('force_prefix', true) && !$translator->loadLocaleFromRequest()) {
+                Route::get('/{any}', function () use ($translator, $request) {
+                    $redirect = $translator->getDefaultLocale() . '/' . $request->path();
+                    if ($request->query()) {
+                        $redirect .= '?' . http_build_query($request->query());
+                    }
+                    return redirect($redirect);
+                })->where('any', '.*');
+            }
+        });
+    }
 
     /**
      * Registers any front-end components implemented in this plugin.

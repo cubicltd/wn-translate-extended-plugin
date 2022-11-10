@@ -16,3 +16,5 @@
     - makes slug parameter optional
 1.0.9:
     - attaches query string on homepage redirect
+1.0.10:
+    - fixes broken language prefix redirects

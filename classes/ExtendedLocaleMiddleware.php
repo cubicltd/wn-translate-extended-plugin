@@ -1,12 +1,10 @@
 <?php namespace StudioBosco\TranslateExtended\Classes;
 
+use Closure;
+use Winter\Translate\Models\Locale;
 use Winter\Translate\Classes\Translator;
 use StudioBosco\TranslateExtended\Classes\BrowserMatching;
 use StudioBosco\TranslateExtended\Models\Settings;
-use Closure;
-use Config;
-use Request;
-use Winter\Translate\Models\Locale;
 
 /**
  * Middleware for advanced locale detection
@@ -29,7 +27,7 @@ class ExtendedLocaleMiddleware
         * TODO: hook the translate plugin's onSwitchLocale ajax handler instead of checking on post
         */
 
-        $this->localeFromPost() ?: 
+        $this->localeFromPost() ?:
         $this->localeFromURL() ?:
         $this->localeFromSession() ?:
         $this->localeFromBrowser();
@@ -37,38 +35,38 @@ class ExtendedLocaleMiddleware
         return $next($request);
     }
 
-    private function localeFromURL()
+    protected function localeFromURL()
     {
         $translator = Translator::instance();
         return $translator->loadLocaleFromRequest() ? $translator->getLocale() : null;
     }
 
-    private function localeFromPost()
+    protected function localeFromPost()
     {
         if(!post('locale')){
             return null;
         }
-        
+
         $translator = Translator::instance();
         $translator->setLocale(post('locale'));
 
         return post('locale');
     }
 
-    private function localeFromSession()
+    protected function localeFromSession()
     {
         $translator = Translator::instance();
-        
+
         return (Settings::get('prefer_user_session',true) && $translator->loadLocaleFromSession())
             ? $translator->getLocale()
             : null;
     }
 
-    private function localeFromBrowser()
+    protected function localeFromBrowser()
     {
         $translator = Translator::instance();
 
-        if(Settings::get('browser_language_detection',true) && isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])){
+        if (Settings::get('browser_language_detection',true) && isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])){
             $accepted = BrowserMatching::parseLanguageList($_SERVER['HTTP_ACCEPT_LANGUAGE']);
             $available = Locale::listEnabled();
             // match against languages enabled in Translate plugin
@@ -84,6 +82,4 @@ class ExtendedLocaleMiddleware
 
         return null;
     }
-
-
 }
