@@ -2,6 +2,7 @@
 
 use App;
 use Route;
+use Event;
 use System\Classes\PluginBase;
 use Winter\Translate\Classes\Translator;
 use StudioBosco\TranslateExtended\Classes\ExtendedLocaleMiddleware;
@@ -66,6 +67,21 @@ class Plugin extends PluginBase
         }
 
         $locale = $locale ? $locale : ($translator->loadLocaleFromRequest() ? $translator->getLocale() : null);
+
+        // mount cms controller to prefixed routes
+        if ($locale) {
+            Route::group(['prefix' => $locale, 'middleware' => 'web'], function() {
+                Route::any('{slug?}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
+            });
+
+            Route::any($locale, 'Cms\Classes\CmsController@run')->middleware('web');
+
+            Event::listen('cms.route', function() use ($locale) {
+                Route::group(['prefix' => $locale, 'middleware' => 'web'], function() {
+                    Route::any('{slug?}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
+                });
+            });
+        }
 
         Route::middleware(['web', ExtendedLocaleMiddleware::class])->group(function () use ($translator, $request) {
             if (Settings::get('route_prefixing', true)) {
