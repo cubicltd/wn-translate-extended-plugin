@@ -96,7 +96,7 @@ class Plugin extends PluginBase
                 }
             }
 
-            if (Settings::get('force_prefix', true) && !$translator->loadLocaleFromRequest()) {
+            if (Settings::get('force_prefix', true) && !$translator->loadLocaleFromRequest() && $request->segment(1) !== 'resizer') {
                 Route::get('/{any}', function () use ($translator, $request) {
                     $redirect = $translator->getDefaultLocale() . '/' . $request->path();
                     if ($request->query()) {
