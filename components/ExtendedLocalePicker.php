@@ -7,7 +7,7 @@ use Winter\Translate\Classes\Translator;
 
 class ExtendedLocalePicker extends LocalePicker
 {
-    public function componentDetails()
+    public function componentDetails(): array
     {
         return [
             'name'        => 'Extended Locale Picker',
@@ -15,7 +15,7 @@ class ExtendedLocalePicker extends LocalePicker
         ];
     }
 
-    public function defineProperties()
+    public function defineProperties(): array
     {
         return [];
     }
