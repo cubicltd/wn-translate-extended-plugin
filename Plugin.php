@@ -144,7 +144,7 @@ class Plugin extends PluginBase
                 'icon'        => 'icon-language',
                 'class'       => 'StudioBosco\TranslateExtended\Models\Settings',
                 'order'       => 552,
-                'category'    => 'rainlab.translate::lang.plugin.name',
+                'category'    => 'winter.translate::lang.plugin.name',
                 'permissions' => ['studiobosco.translateextended.access_settings']
             ]
         ];
