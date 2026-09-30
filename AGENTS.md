@@ -49,3 +49,11 @@ A fourth, not a static: a test that needs a specific request has to put a **real
 ## Tests
 
 `tests/unit` for the pure pieces, `tests/feature` for anything that boots the framework. `tests/TranslateExtendedTestCase` extends `System\Tests\Bootstrap\PluginTestCase`, which boots the application on in-memory SQLite, runs `winter:up` before each test, and derives the plugin under test from the test class's namespace — so tests must live under `Cubic\TranslateExtended\Tests`.
+
+The suite runs with `php artisan winter:test -p Cubic.TranslateExtended`. CI runs it on PHP 8.1, 8.2 and 8.3, with no database service because the connection is in-memory SQLite.
+
+Rector is checked but not allowed to rewrite: the workflow runs `--dry-run` and fails if anything is left, so a contributor finds out in CI rather than in review. `tools/vendor/bin/rector process` applies it.
+
+`phpcs.xml` is the first-party plugin's ruleset, unchanged. Run `vendor/bin/phpcs -n --report=full --extensions=php <files>` from a Winter checkout before pushing.
+
+The languages in `lang/` are held to the English key set by a test. Adding a key to English means adding it to every other file in the same commit, or the suite goes red.

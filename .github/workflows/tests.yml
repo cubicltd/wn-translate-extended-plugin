@@ -1,0 +1,41 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  test-php:
+    name: Test (PHP ${{ matrix.phpVersion }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        phpVersion:
+          - 8.1
+          - 8.2
+          - 8.3
+
+    # No database service. PluginTestCase puts the application on an in-memory
+    # SQLite connection because config/testing/database.php does not exist, and
+    # winter:test never configures a site. The first-party plugin's workflow
+    # carries a postgres service it also does not use; there is no point
+    # copying that.
+    steps:
+      - name: Checkout Action
+        uses: actions/checkout@v4
+
+      - name: Checkout Plugin
+        uses: wintercms/setup-winter-action@v1
+        with:
+          php-version: ${{ matrix.phpVersion }}
+          plugin-author: cubic
+          plugin-name: translateextended
+
+      - name: Run Tests
+        run: php artisan winter:test -p Cubic.TranslateExtended
