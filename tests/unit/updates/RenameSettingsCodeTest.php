@@ -91,4 +91,32 @@ class RenameSettingsCodeTest extends TranslateExtendedTestCase
             ->whereIn('item', [self::OLD_CODE, self::NEW_CODE])
             ->count());
     }
+
+    /**
+     * A row under the new code already exists when the plugin is deployed
+     * before its update runs: Settings::$settingsCode is already the new value,
+     * so the first request the site serves writes a row under it, and the old
+     * row is still there when winter:up gets to the migration.
+     *
+     * `item` is indexed but not unique, so renaming unconditionally leaves two
+     * rows under the same key instead of failing. The settings behaviour then
+     * reads whichever the database returns first, and the stored configuration
+     * is gone. The old row has to win.
+     */
+    public function testTheOldRowWinsWhenBothRowsExist()
+    {
+        $this->seedSettingsRow(self::NEW_CODE, 'written by a request before the update ran');
+        $this->seedSettingsRow(self::OLD_CODE, 'the operator\'s configuration');
+
+        $this->updater()->setUp($this->scriptPath());
+
+        $this->assertSame(1, Db::table('system_settings')
+            ->whereIn('item', [self::OLD_CODE, self::NEW_CODE])
+            ->count());
+
+        $this->assertSame(
+            'the operator\'s configuration',
+            $this->settingsValue(self::NEW_CODE)
+        );
+    }
 }
