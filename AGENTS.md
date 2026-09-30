@@ -32,7 +32,7 @@ The composer vendor and the GitHub organisation (`cubicltd`) are independent. Re
 
 - **`BrowserMatching` reads `$_SERVER` directly**, not through Laravel's request, so a test cannot drive it with `$this->withServerVariables()`. Set and restore `$_SERVER` by hand.
 - **`Settings::$settingsCode` is a database key**, the primary key of a `system_settings` row. Renaming it orphans stored settings unless a migration moves the row; `updates/v2.0.0/rename_settings_code.php` is the precedent.
-- **`Translator::isconfigured()` is called in the wrong case.** PHP method names are case-insensitive so it works; do not write tests that assert the lowercase spelling, because the correct spelling is what will be there after modernisation.
+- **`Translator::isconfigured()` is called in the wrong case.** PHP method names are case-insensitive so it works, and Rector leaves it alone — `RenameMethodRector` is not part of any standard set, it needs a `rector/rename` entry. Do not write tests that assert the lowercase spelling, and do not expect the modernisation to have fixed it.
 - **`ExtendedLocalePicker` extends a frozen first-party class.** Do not mark it `final` and do not try to change the parent's `makeLocaleUrlFromPage()`.
 - **`Plugin::registerRouting()` reads the global request and ignores the middleware-style argument**, and it only runs at all when `PluginManager::$noInit` is false. Both are handled in `tests/TranslateExtendedTestCase`; see the isolation note below.
 
