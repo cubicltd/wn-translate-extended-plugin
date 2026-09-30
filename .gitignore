@@ -1,7 +1,9 @@
 # Composer ignores
 /vendor
 composer.phar
-composer.lock
+# Only the plugin's own lock: the one in tools/ is committed on purpose, so the
+# Rector version the diffs were produced with is pinned.
+/composer.lock
 
 # Rector is installed as its own composer project so that its dependencies
 # never reach the Winter CMS merge, which ignores a plugin's require-dev.

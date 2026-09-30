@@ -1,0 +1,19 @@
+{
+    "name": "cubic/translate-extended-tools",
+    "description": "Development tools for the Translate Extended plugin, kept out of the plugin's own dependencies so that Winter's merge never sees them.",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "rector/rector": "^2.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

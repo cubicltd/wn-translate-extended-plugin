@@ -34,7 +34,7 @@ class Plugin extends PluginBase
      */
     public $require = ['Winter.Translate'];
 
-    public function boot()
+    public function boot(): void
     {
         if (!App::runningInBackend()) {
             $this->registerRouting();
@@ -66,24 +66,24 @@ class Plugin extends PluginBase
             }
         }
 
-        $locale = $locale ? $locale : ($translator->loadLocaleFromRequest() ? $translator->getLocale() : null);
+        $locale = $locale ?: ($translator->loadLocaleFromRequest() ? $translator->getLocale() : null);
 
         // mount cms controller to prefixed routes
         if ($locale) {
-            Route::group(['prefix' => $locale, 'middleware' => 'web'], function () {
+            Route::group(['prefix' => $locale, 'middleware' => 'web'], function (): void {
                 Route::any('{slug?}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
             });
 
             Route::any($locale, 'Cms\Classes\CmsController@run')->middleware('web');
 
-            Event::listen('cms.route', function () use ($locale) {
-                Route::group(['prefix' => $locale, 'middleware' => 'web'], function () {
+            Event::listen('cms.route', function () use ($locale): void {
+                Route::group(['prefix' => $locale, 'middleware' => 'web'], function (): void {
                     Route::any('{slug?}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
                 });
             });
         }
 
-        Route::middleware(['web', ExtendedLocaleMiddleware::class])->group(function () use ($translator, $request) {
+        Route::middleware(['web', ExtendedLocaleMiddleware::class])->group(function () use ($translator, $request): void {
             if (Settings::get('route_prefixing', true)) {
                 if (Settings::get('homepage_redirect', true)) {
                     Route::get('/', function () use ($translator, $request) {
@@ -116,7 +116,7 @@ class Plugin extends PluginBase
     public function registerComponents()
     {
         return [
-            'Cubic\TranslateExtended\Components\ExtendedLocalePicker' => 'extendedLocalePicker'
+            \Cubic\TranslateExtended\Components\ExtendedLocalePicker::class => 'extendedLocalePicker'
         ];
     }
 
@@ -142,7 +142,7 @@ class Plugin extends PluginBase
                 'label'       => 'cubic.translateextended::lang.strings.settings_label',
                 'description' => 'cubic.translateextended::lang.strings.settings_desc',
                 'icon'        => 'icon-language',
-                'class'       => 'Cubic\TranslateExtended\Models\Settings',
+                'class'       => \Cubic\TranslateExtended\Models\Settings::class,
                 'order'       => 552,
                 'category'    => 'winter.translate::lang.plugin.name',
                 'permissions' => ['cubic.translateextended.access_settings']

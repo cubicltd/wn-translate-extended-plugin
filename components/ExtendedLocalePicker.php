@@ -20,12 +20,12 @@ class ExtendedLocalePicker extends LocalePicker
         return [];
     }
 
-    public function init()
+    public function init(): void
     {
         $this->translator = Translator::instance();
     }
 
-    public function onRun()
+    public function onRun(): void
     {
         $this->page['activeLocale'] = $this->activeLocale = $this->translator->getLocale();
         $this->page['locales'] = $this->locales = LocaleModel::listEnabled();

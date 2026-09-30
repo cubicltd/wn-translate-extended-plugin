@@ -14,11 +14,11 @@ class BrowserMatching
     {
         if (is_null($languageList)) {
             if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-                return array();
+                return [];
             }
             $languageList = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
         }
-        $languages = array();
+        $languages = [];
         $languageRanges = explode(',', trim($languageList));
         foreach ($languageRanges as $languageRange) {
             if (preg_match('/(\*|[a-zA-Z0-9]{1,8}(?:-[a-zA-Z0-9]{1,8})*)(?:\s*;\s*q\s*=\s*(0(?:\.\d{0,3})?|1(?:\.0{0,3})?))?/', trim($languageRange), $match)) {
@@ -27,9 +27,7 @@ class BrowserMatching
                 } else {
                     $match[2] = (string) floatval($match[2]);
                 }
-                if (!isset($languages[$match[2]])) {
-                    $languages[$match[2]] = strtolower($match[1]);
-                }
+                $languages[$match[2]] ??= strtolower($match[1]);
             }
         }
         krsort($languages);
@@ -39,7 +37,7 @@ class BrowserMatching
     // compare two parsed arrays of language tags and find the matches
     public static function findMatches($accepted, $available)
     {
-        $matches = array();
+        $matches = [];
         foreach ($available as $availableLocale => $availableName) {
             foreach ($accepted as $acceptedQuality => $acceptedLocale) {
                 $acceptedQuality = floatval($acceptedQuality);
@@ -78,7 +76,7 @@ class BrowserMatching
             if ($a[$i] !== $b[$i]) {
                 break;
             }
-            if (count($a) == count($b) && $i == $n-1) {
+            if (count($a) === count($b) && $i == $n-1) {
                 $perfect_match = true;
             }
         }
