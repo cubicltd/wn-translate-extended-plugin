@@ -20,4 +20,5 @@
     - fixes broken language prefix redirects
 2.0.0:
     - 'Taken over by Cubic and rebranded — the package is now cubic/wn-translate-extended-plugin, the plugin namespace is Cubic\TranslateExtended, and PHP 8.1 is the minimum supported version.'
+    - 'An Accept-Language header of "*" no longer selects an arbitrary locale, and a q=0 is now honoured as a refusal rather than promoted to full preference.'
     - v2.0.0/rename_settings_code.php

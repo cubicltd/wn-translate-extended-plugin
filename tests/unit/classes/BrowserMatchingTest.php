@@ -137,42 +137,21 @@ class BrowserMatchingTest extends TranslateExtendedTestCase
     }
 
     /**
-     * A bare `q=0` is silently promoted to full preference. The quality pattern
-     * is `0(?:\.\d{0,3})|1(?:\.0{0,3})`, and the inner group is not optional, so
-     * it only matches a zero that is written with a decimal point. `q=0` fails
-     * to match at all, the surrounding optional group is skipped, and the
-     * quality falls back to its `1.0` default.
+     * A bare `q=0` means the client refuses the language, and it is honoured as
+     * such.
      *
-     * `q=0` means the client refuses the language, so this inverts the client's
-     * intent rather than merely approximating it.
+     * The quality pattern is `0(?:\.\d{0,3})?|1(?:\.0{0,3})?`, and the trailing
+     * `?` on the inner group is what lets a zero written without a decimal
+     * point parse. Without it the whole alternation fails, the surrounding
+     * optional group is skipped, and the quality falls back to its `1.0`
+     * default — which promoted a refusal to full preference.
      */
-    public function testABareZeroQualityIsTreatedAsAFullPreference()
+    public function testABareZeroQualityIsTreatedAsARefusal()
     {
-        $this->assertSame(
-            ['1.0' => 'de'],
-            BrowserMatching::parseLanguageList('de;q=0')
-        );
-
-        $this->assertSame(
-            ['de' => 2.0],
-            BrowserMatching::findMatches(
-                BrowserMatching::parseLanguageList('de;q=0'),
-                ['de' => 'Deutsch']
-            )
-        );
-    }
-
-    /**
-     * A zero written with a decimal point does match, and is correctly
-     * discarded as unacceptable.
-     */
-    public function testADecimalZeroQualityIsHonoured()
-    {
-        $parsed = BrowserMatching::parseLanguageList('de;q=0.0');
+        $parsed = BrowserMatching::parseLanguageList('de;q=0');
 
         // The quality is cast through a float and back to a string before it
-        // becomes a key, so `0.0` arrives as `'0'` and PHP then stores it as
-        // the integer 0.
+        // becomes a key, so a zero arrives as the integer 0.
         $this->assertSame([0 => 'de'], $parsed);
 
         $this->assertSame(
@@ -182,12 +161,27 @@ class BrowserMatchingTest extends TranslateExtendedTestCase
     }
 
     /**
-     * A bare `q=1` fails to match for the same reason, but the `1.0` default
-     * that replaces it is the value that was asked for, so nothing changes.
+     * A zero written with a decimal point is refused the same way.
+     */
+    public function testADecimalZeroQualityIsHonoured()
+    {
+        $this->assertSame(
+            [],
+            BrowserMatching::findMatches(
+                BrowserMatching::parseLanguageList('de;q=0.0'),
+                ['de' => 'Deutsch']
+            )
+        );
+    }
+
+    /**
+     * A bare `q=1` now matches the pattern instead of falling through to the
+     * default, so the key is the cast form of 1 rather than the literal `1.0`.
+     * Both mean the same thing; only the key differs.
      */
     public function testABareFullQualityStillReadsAsFullPreference()
     {
-        $this->assertSame(['1.0' => 'de'], BrowserMatching::parseLanguageList('de;q=1'));
+        $this->assertSame([1 => 'de'], BrowserMatching::parseLanguageList('de;q=1'));
     }
 
     public function testFindMatchesReturnsNothingWhenNothingMatches()
@@ -202,24 +196,19 @@ class BrowserMatchingTest extends TranslateExtendedTestCase
     }
 
     /**
-     * A bare wildcard matches no tag, so the fallback hands back the available
-     * locales untouched — still keyed by code, but holding names rather than
-     * scores. The arsort that follows therefore orders them by name, and the
-     * caller ends up with whichever enabled locale has the greatest name. The
-     * choice is arbitrary: it depends on the localised name of a language, not
-     * on any preference.
+     * A bare wildcard matches no tag, and a client sending `*` is saying it
+     * accepts anything rather than expressing a preference. Nothing is chosen,
+     * so the caller keeps whatever it already had.
      */
-    public function testFindMatchesFallsBackToTheAvailableLocalesOnAWildcard()
+    public function testAWildcardAloneMatchesNothing()
     {
-        $available = ['en' => 'English', 'de' => 'Deutsch'];
-
-        $matches = BrowserMatching::findMatches(
-            BrowserMatching::parseLanguageList('*'),
-            $available
+        $this->assertSame(
+            [],
+            BrowserMatching::findMatches(
+                BrowserMatching::parseLanguageList('*'),
+                ['en' => 'English', 'de' => 'Deutsch']
+            )
         );
-
-        $this->assertSame($available, $matches);
-        $this->assertSame('en', array_keys($matches)[0]);
     }
 
     /**

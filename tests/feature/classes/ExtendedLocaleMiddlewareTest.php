@@ -161,24 +161,17 @@ class ExtendedLocaleMiddlewareTest extends TranslateExtendedTestCase
     }
 
     /**
-     * `*` matches no tag, so findMatches falls back to the enabled locales and
-     * the arsort that follows orders them by name. Whichever locale has the
-     * greatest name wins, which is a function of how a language is written
-     * down rather than of anything the visitor asked for.
-     *
-     * Pinned as it behaves. The fix is a later commit.
+     * A client that sends only `*` is saying it accepts anything, not expressing
+     * a preference, so nothing is chosen and the default locale stands.
      */
-    public function testAWildcardAloneSelectsTheLocaleWithTheGreatestName()
+    public function testAWildcardAloneLeavesTheDefaultLocaleAlone()
     {
         Settings::set('browser_language_detection', true);
         Settings::set('prefer_user_session', true);
 
         $_SERVER['HTTP_ACCEPT_LANGUAGE'] = '*';
 
-        $available = Locale::listEnabled();
-        arsort($available);
-
-        $this->assertSame(array_keys($available)[0], $this->runMiddleware());
+        $this->assertSame($this->defaultLocale(), $this->runMiddleware());
     }
 
     /**

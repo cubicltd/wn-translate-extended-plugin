@@ -21,7 +21,7 @@ class BrowserMatching
         $languages = array();
         $languageRanges = explode(',', trim($languageList));
         foreach ($languageRanges as $languageRange) {
-            if (preg_match('/(\*|[a-zA-Z0-9]{1,8}(?:-[a-zA-Z0-9]{1,8})*)(?:\s*;\s*q\s*=\s*(0(?:\.\d{0,3})|1(?:\.0{0,3})))?/', trim($languageRange), $match)) {
+            if (preg_match('/(\*|[a-zA-Z0-9]{1,8}(?:-[a-zA-Z0-9]{1,8})*)(?:\s*;\s*q\s*=\s*(0(?:\.\d{0,3})?|1(?:\.0{0,3})?))?/', trim($languageRange), $match)) {
                 if (!isset($match[2])) {
                     $match[2] = '1.0';
                 } else {
@@ -40,15 +40,11 @@ class BrowserMatching
     public static function findMatches($accepted, $available)
     {
         $matches = array();
-        $any = false;
         foreach ($available as $availableLocale => $availableName) {
             foreach ($accepted as $acceptedQuality => $acceptedLocale) {
                 $acceptedQuality = floatval($acceptedQuality);
                 if ($acceptedQuality === 0.0) {
                     continue;
-                }
-                if ($acceptedLocale === '*') {
-                    $any = true;
                 }
                 $matchingGrade = self::matchLanguage($acceptedLocale, $availableLocale);
                 if ($matchingGrade > 0) {
@@ -58,9 +54,6 @@ class BrowserMatching
                     }
                 }
             }
-        }
-        if (count($matches) === 0 && $any) {
-            $matches = $available;
         }
         arsort($matches);
         return $matches;
