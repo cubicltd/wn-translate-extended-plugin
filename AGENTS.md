@@ -8,7 +8,7 @@ A Winter CMS plugin extending [Winter.Translate](https://github.com/wintercms/wn
 
 **Conventional Commits start at `2.0.0` and apply to nothing above it.** Before that line the log reads the way the original project wrote.
 
-`2.0.0` is also the release that renamed the composer package, the PHP namespace and the settings code. Nothing about behaviour changed in it; it is a major version because every identifier did.
+`2.0.0` is also the release that renamed the composer package, the PHP namespace and the settings code. Those three are why it is a major version. It also changes behaviour in two places, both in `BrowserMatching`: a bare `*` no longer selects a locale, and a bare `q=0` is honoured as a refusal. `notes/translate-extended.md` in the environment repository has the detail.
 
 **Do not describe the upstream as abandoned.** The project lives in a self-hosted Git at `git.anzui.dev/wintercms/wn-translate-extended` and is published on Packagist as `studiobosco/wn-translate-extended`. The GitHub repository of the same name does not resolve, which is not the same thing. Our import was taken from `f788229`, the commit the Packagist publication pointed at. The `replace` in `composer.json` is what redirects anything still requiring the old package.
 
