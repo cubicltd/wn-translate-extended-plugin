@@ -23,6 +23,52 @@ class PluginRoutingTest extends TranslateExtendedTestCase
     }
 
     /**
+     * Runs one of the plugin's redirect routes and returns where it sends the
+     * visitor, as a path with the query string, so an assertion reads the same
+     * whether the target came back as a relative or an absolute URL.
+     *
+     * The route's closure captured the request and the translator that existed
+     * when the plugin registered it, so both the query string and the active
+     * locale have to be in place **before** the plugin is booted, not before
+     * the route is run.
+     */
+    protected function followRedirect($uri, $path, $locale = null)
+    {
+        if ($locale) {
+            Translator::forgetInstance();
+            Translator::instance()->setLocale($locale);
+        }
+
+        $this->visit($path);
+        $this->bootPlugin();
+
+        $route = $this->routes()->first(function ($route) use ($uri) {
+            return $route->uri() === $uri;
+        });
+
+        $this->assertNotNull($route, 'no route registered for ' . $uri);
+
+        // A route pulled out of the collection has no container and no
+        // parameters: runCallable() resolves its dispatcher from the first and
+        // hands the second to the closure. Binding it to the request supplies
+        // both, and is what Router::findRoute() would have done.
+        $route->setContainer($this->app);
+        $route->bind(request());
+
+        $response = $route->run();
+
+        $this->assertNotNull($response, 'the route returned no response');
+        $this->assertSame(302, $response->getStatusCode());
+
+        $target = $response->headers->get('Location');
+        $parsed = parse_url($target);
+
+        $query = parse_url($target, PHP_URL_QUERY);
+
+        return $parsed['path'] . ($query ? '?' . $query : '');
+    }
+
+    /**
      * Throws away the routes PluginTestCase registered while booting the plugin
      * and registers them again, so each test sees the routes its own settings
      * produce rather than the ones that happened to be in place at boot.
@@ -288,5 +334,47 @@ class PluginRoutingTest extends TranslateExtendedTestCase
         $this->visit('/some/page');
 
         $this->assertNotContains('de', $this->registerAllRoutes());
+    }
+
+    /**
+     * The redirect drops the query string unless the code carries it, which
+     * would silently discard every campaign and filter parameter a visitor
+     * arrived with. Both redirects are covered, because they are two separate
+     * closures and each has to be fixed on its own.
+     */
+    public function testTheHomepageRedirectKeepsTheQueryString()
+    {
+        Settings::set('route_prefixing', true);
+        Settings::set('homepage_redirect', true);
+
+        $this->assertSame(
+            '/de?utm_source=news&page=2',
+            $this->followRedirect('/', '/?utm_source=news&page=2', 'de')
+        );
+    }
+
+    public function testTheHomepageRedirectHasNothingToKeepWithoutAQueryString()
+    {
+        Settings::set('route_prefixing', true);
+        Settings::set('homepage_redirect', true);
+
+        $this->assertSame('/de', $this->followRedirect('/', '/', 'de'));
+    }
+
+    public function testTheForcedPrefixRedirectKeepsTheQueryString()
+    {
+        Settings::set('force_prefix', true);
+
+        $this->assertSame(
+            '/en/some/page?utm_source=news',
+            $this->followRedirect('{any}', '/some/page?utm_source=news', 'en')
+        );
+    }
+
+    public function testTheForcedPrefixRedirectHasNothingToKeepWithoutAQueryString()
+    {
+        Settings::set('force_prefix', true);
+
+        $this->assertSame('/en/some/page', $this->followRedirect('{any}', '/some/page', 'en'));
     }
 }

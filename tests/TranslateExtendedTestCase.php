@@ -54,15 +54,4 @@ abstract class TranslateExtendedTestCase extends BaseTestCase
         Translator::forgetInstance();
         PluginManager::$noInit = false;
     }
-
-    /**
-     * Returns a URL the middleware is expected to redirect to, with the host
-     * and scheme of the running site left off so assertions stay readable.
-     */
-    protected function redirectPath($response): string
-    {
-        $target = $response->headers->get('Location');
-
-        return $target ? parse_url($target, PHP_URL_PATH) : '';
-    }
 }
