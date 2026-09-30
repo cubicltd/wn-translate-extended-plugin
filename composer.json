@@ -1,19 +1,39 @@
 {
-    "name": "studiobosco/wn-translate-extended",
+    "name": "cubic/wn-translate-extended-plugin",
     "type": "winter-plugin",
-    "description": "Plugin to Winter CMS that extends behavior of the default Translate Plugin",
+    "description": "Extends Winter's Translate plugin with browser language detection, locale route prefixes and a locale picker",
+    "homepage": "https://github.com/cubicltd/wn-translate-extended-plugin",
     "keywords": [
         "winter",
         "wintercms",
-        "translate"
+        "translate",
+        "locale",
+        "i18n"
     ],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Cubic",
+            "homepage": "https://cubicltd.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/cubicltd/wn-translate-extended-plugin/issues",
+        "source": "https://github.com/cubicltd/wn-translate-extended-plugin"
+    },
     "require": {
-        "php": ">=5.5.9",
+        "php": ">=8.1",
         "composer/installers": "~1.0"
     },
-    "minimum-stability": "dev",
+    "replace": {
+        "studiobosco/wn-translate-extended": "*"
+    },
     "extra": {
         "installer-name": "translateextended"
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        }
     }
 }

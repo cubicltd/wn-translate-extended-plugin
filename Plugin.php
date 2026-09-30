@@ -1,12 +1,12 @@
-<?php namespace StudioBosco\TranslateExtended;
+<?php namespace Cubic\TranslateExtended;
 
 use App;
 use Route;
 use Event;
 use System\Classes\PluginBase;
 use Winter\Translate\Classes\Translator;
-use StudioBosco\TranslateExtended\Classes\ExtendedLocaleMiddleware;
-use StudioBosco\TranslateExtended\Models\Settings;
+use Cubic\TranslateExtended\Classes\ExtendedLocaleMiddleware;
+use Cubic\TranslateExtended\Models\Settings;
 
 /**
  * Translate Extended Plugin Information File
@@ -22,10 +22,10 @@ class Plugin extends PluginBase
     {
         return [
             'name'        => 'Translate Extended',
-            'description' => 'studiobosco.translateextended::lang.strings.plugin_desc',
-            'author'      => 'Excodus, StudioBosco',
+            'description' => 'cubic.translateextended::lang.strings.plugin_desc',
+            'author'      => 'Cubic',
             'icon'        => 'icon-language',
-            'homepage'    => 'https://github.com/studiobosco/wn-translate-extended'
+            'homepage'    => 'https://github.com/cubicltd/wn-translate-extended-plugin'
         ];
     }
 
@@ -70,14 +70,14 @@ class Plugin extends PluginBase
 
         // mount cms controller to prefixed routes
         if ($locale) {
-            Route::group(['prefix' => $locale, 'middleware' => 'web'], function() {
+            Route::group(['prefix' => $locale, 'middleware' => 'web'], function () {
                 Route::any('{slug?}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
             });
 
             Route::any($locale, 'Cms\Classes\CmsController@run')->middleware('web');
 
-            Event::listen('cms.route', function() use ($locale) {
-                Route::group(['prefix' => $locale, 'middleware' => 'web'], function() {
+            Event::listen('cms.route', function () use ($locale) {
+                Route::group(['prefix' => $locale, 'middleware' => 'web'], function () {
                     Route::any('{slug?}', 'Cms\Classes\CmsController@run')->where('slug', '(.*)?');
                 });
             });
@@ -116,7 +116,7 @@ class Plugin extends PluginBase
     public function registerComponents()
     {
         return [
-            'StudioBosco\TranslateExtended\Components\ExtendedLocalePicker' => 'extendedLocalePicker'
+            'Cubic\TranslateExtended\Components\ExtendedLocalePicker' => 'extendedLocalePicker'
         ];
     }
 
@@ -128,9 +128,9 @@ class Plugin extends PluginBase
     public function registerPermissions()
     {
         return [
-            'studiobosco.translateextended.access_settings' => [
-                'tab'   => 'studiobosco.translateextended::lang.permissions.tab',
-                'label' => 'studiobosco.translateextended::lang.permissions.settings'
+            'cubic.translateextended.access_settings' => [
+                'tab'   => 'cubic.translateextended::lang.permissions.tab',
+                'label' => 'cubic.translateextended::lang.permissions.settings'
             ],
         ];
     }
@@ -139,13 +139,13 @@ class Plugin extends PluginBase
     {
         return [
             'translateextended' => [
-                'label'       => 'studiobosco.translateextended::lang.strings.settings_label',
-                'description' => 'studiobosco.translateextended::lang.strings.settings_desc',
+                'label'       => 'cubic.translateextended::lang.strings.settings_label',
+                'description' => 'cubic.translateextended::lang.strings.settings_desc',
                 'icon'        => 'icon-language',
-                'class'       => 'StudioBosco\TranslateExtended\Models\Settings',
+                'class'       => 'Cubic\TranslateExtended\Models\Settings',
                 'order'       => 552,
                 'category'    => 'winter.translate::lang.plugin.name',
-                'permissions' => ['studiobosco.translateextended.access_settings']
+                'permissions' => ['cubic.translateextended.access_settings']
             ]
         ];
     }

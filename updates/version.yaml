@@ -18,3 +18,6 @@
     - attaches query string on homepage redirect
 1.0.10:
     - fixes broken language prefix redirects
+2.0.0:
+    - 'Taken over by Cubic and rebranded — the package is now cubic/wn-translate-extended-plugin, the plugin namespace is Cubic\TranslateExtended, and PHP 8.1 is the minimum supported version.'
+    - v2.0.0/rename_settings_code.php

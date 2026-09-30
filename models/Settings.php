@@ -1,7 +1,8 @@
 <?php
-namespace StudioBosco\TranslateExtended\Models;
+namespace Cubic\TranslateExtended\Models;
 
 use Model;
+
 class Settings extends Model
 {
 
@@ -9,7 +10,7 @@ class Settings extends Model
         'System.Behaviors.SettingsModel'
     ];
 
-    public $settingsCode = 'studiobosco_translateextended_settings';
+    public $settingsCode = 'cubic_translateextended_settings';
 
     public $settingsFields = 'fields.yaml';
 }

@@ -4,35 +4,35 @@
 
 fields:
   browser_language_detection:
-    label: studiobosco.translateextended::lang.strings.browser_language_detection
-    comment: studiobosco.translateextended::lang.strings.browser_language_detection_comment
+    label: cubic.translateextended::lang.strings.browser_language_detection
+    comment: cubic.translateextended::lang.strings.browser_language_detection_comment
     type: switch
     default: true
   prefer_user_session:
-    label: studiobosco.translateextended::lang.strings.prefer_user_session
-    comment: studiobosco.translateextended::lang.strings.prefer_user_session_comment
+    label: cubic.translateextended::lang.strings.prefer_user_session
+    comment: cubic.translateextended::lang.strings.prefer_user_session_comment
     type: switch
     default: true
   query_param:
-    label: studiobosco.translateextended::lang.strings.query_param
-    comment: studiobosco.translateextended::lang.strings.query_param_comment
+    label: cubic.translateextended::lang.strings.query_param
+    comment: cubic.translateextended::lang.strings.query_param_comment
     span: left
   header:
-    label: studiobosco.translateextended::lang.strings.header
-    comment: studiobosco.translateextended::lang.strings.header_comment
+    label: cubic.translateextended::lang.strings.header
+    comment: cubic.translateextended::lang.strings.header_comment
     span: right
   route_prefixing:
-    label: studiobosco.translateextended::lang.strings.route_prefixing
-    comment: studiobosco.translateextended::lang.strings.route_prefixing_comment
+    label: cubic.translateextended::lang.strings.route_prefixing
+    comment: cubic.translateextended::lang.strings.route_prefixing_comment
     type: switch
     default: true
   homepage_redirect:
-    label: studiobosco.translateextended::lang.strings.homepage_redirect
-    comment: studiobosco.translateextended::lang.strings.homepage_redirect_comment
+    label: cubic.translateextended::lang.strings.homepage_redirect
+    comment: cubic.translateextended::lang.strings.homepage_redirect_comment
     type: switch
     default: true
   force_prefix:
-    label: studiobosco.translateextended::lang.strings.force_prefix
-    comment: studiobosco.translateextended::lang.strings.force_prefix_comment
+    label: cubic.translateextended::lang.strings.force_prefix
+    comment: cubic.translateextended::lang.strings.force_prefix_comment
     type: switch
     default: true

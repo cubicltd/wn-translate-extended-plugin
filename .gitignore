@@ -1,0 +1,26 @@
+# Composer ignores
+/vendor
+composer.phar
+composer.lock
+
+# Rector is installed as its own composer project so that its dependencies
+# never reach the Winter CMS merge, which ignores a plugin's require-dev.
+/tools/vendor
+
+# Editor ignores
+nbproject
+.idea
+.vscode
+_ide_helper.php
+
+# Other ignores
+.DS_Store
+package-lock.json
+/node_modules
+
+# PHPUnit result cache (regenerated per run)
+.phpunit.result.cache
+
+# Coverage report written by tests/coverage.sh. The baseline next to it is
+# tracked on purpose: it is the reference the guard compares against.
+/build/

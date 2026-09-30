@@ -1,10 +1,10 @@
-<?php namespace StudioBosco\TranslateExtended\Classes;
+<?php namespace Cubic\TranslateExtended\Classes;
 
 use Closure;
 use Winter\Translate\Models\Locale;
 use Winter\Translate\Classes\Translator;
-use StudioBosco\TranslateExtended\Classes\BrowserMatching;
-use StudioBosco\TranslateExtended\Models\Settings;
+use Cubic\TranslateExtended\Classes\BrowserMatching;
+use Cubic\TranslateExtended\Models\Settings;
 
 /**
  * Middleware for advanced locale detection
@@ -43,7 +43,7 @@ class ExtendedLocaleMiddleware
 
     protected function localeFromPost()
     {
-        if(!post('locale')){
+        if (!post('locale')) {
             return null;
         }
 
@@ -57,7 +57,7 @@ class ExtendedLocaleMiddleware
     {
         $translator = Translator::instance();
 
-        return (Settings::get('prefer_user_session',true) && $translator->loadLocaleFromSession())
+        return (Settings::get('prefer_user_session', true) && $translator->loadLocaleFromSession())
             ? $translator->getLocale()
             : null;
     }
@@ -66,7 +66,7 @@ class ExtendedLocaleMiddleware
     {
         $translator = Translator::instance();
 
-        if (Settings::get('browser_language_detection',true) && isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])){
+        if (Settings::get('browser_language_detection', true) && isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
             $accepted = BrowserMatching::parseLanguageList($_SERVER['HTTP_ACCEPT_LANGUAGE']);
             $available = Locale::listEnabled();
             // match against languages enabled in Translate plugin

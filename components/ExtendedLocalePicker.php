@@ -1,4 +1,4 @@
-<?php namespace StudioBosco\TranslateExtended\Components;
+<?php namespace Cubic\TranslateExtended\Components;
 
 use Cms\Classes\ComponentBase;
 use Winter\Translate\Components\LocalePicker;
@@ -11,7 +11,7 @@ class ExtendedLocalePicker extends LocalePicker
     {
         return [
             'name'        => 'Extended Locale Picker',
-            'description' => 'studiobosco.translateextended::lang.strings.localepicker_desc'
+            'description' => 'cubic.translateextended::lang.strings.localepicker_desc'
         ];
     }
 

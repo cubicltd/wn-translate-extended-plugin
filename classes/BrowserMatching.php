@@ -1,15 +1,17 @@
-<?php namespace StudioBosco\TranslateExtended\Classes;
+<?php namespace Cubic\TranslateExtended\Classes;
 
 /**
  * Util functions for language detection from the client browser
  */
-class BrowserMatching{
+class BrowserMatching
+{
 
     // browser language parser based on Gumbo's answer
     // http://stackoverflow.com/a/3771447/3704886
 
     // parse list of comma separated language tags and sort it by the quality value
-    public static function parseLanguageList($languageList) {
+    public static function parseLanguageList($languageList)
+    {
         if (is_null($languageList)) {
             if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
                 return array();
@@ -35,13 +37,16 @@ class BrowserMatching{
     }
 
     // compare two parsed arrays of language tags and find the matches
-    public static function findMatches($accepted, $available) {
+    public static function findMatches($accepted, $available)
+    {
         $matches = array();
         $any = false;
         foreach ($available as $availableLocale => $availableName) {
             foreach ($accepted as $acceptedQuality => $acceptedLocale) {
-            $acceptedQuality = floatval($acceptedQuality);
-            if ($acceptedQuality === 0.0) continue;
+                $acceptedQuality = floatval($acceptedQuality);
+                if ($acceptedQuality === 0.0) {
+                    continue;
+                }
                 if ($acceptedLocale === '*') {
                     $any = true;
                 }
@@ -69,14 +74,17 @@ class BrowserMatching{
      * @param $b [] backend-available
      * @return float|int
      */
-    public static function matchLanguage($a, $b) {
+    public static function matchLanguage($a, $b)
+    {
         // convert 'en-US' to 'en-us'
         $b = strtolower($b);
         $a = explode('-', $a);
         $b = explode('-', $b);
         $perfect_match = false;
         for ($i=0, $n=min(count($a), count($b)); $i<$n; $i++) {
-            if ($a[$i] !== $b[$i]) break;
+            if ($a[$i] !== $b[$i]) {
+                break;
+            }
             if (count($a) == count($b) && $i == $n-1) {
                 $perfect_match = true;
             }
@@ -85,5 +93,4 @@ class BrowserMatching{
         $val = $i === 0 ? 0 : (float) $i / count($a);
         return $perfect_match ? 2 : $val;
     }
-
 }

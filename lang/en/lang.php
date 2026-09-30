@@ -2,7 +2,7 @@
 
 return [
     'strings'     => [
-        'plugin_desc'               => 'Adds browser\'s language detection and language route prefixes to the Rainlab\'s Translate plugin.',
+        'plugin_desc'               => 'Adds browser\'s language detection and language route prefixes to Winter\'s Translate plugin.',
         'plugin_short_desc'               => 'Extends Translate plugin',
         'settings_label'            => 'Translate Extended Settings',
         'settings_desc'             => 'Manage the settings for the Translate Extended.',
