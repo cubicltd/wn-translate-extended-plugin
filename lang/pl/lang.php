@@ -8,12 +8,18 @@ return [
         'settings_desc'             => 'Zarządzaj ustawieniami Translate Extended',
         'browser_language_detection'           => 'Detekcja preferowanego języka przeglądarki',
         'browser_language_detection_comment'   => 'Włącza tłumaczenie w preferowanym języku przeglądarki',
+        'query_param' => 'Parametr zapytania',
+        'query_param_comment' => 'Jeśli ustawione, lokalizacja będzie wykrywana na podstawie tego parametru zapytania.',
+        'header' => 'Nagłówek',
+        'header_comment' => 'Jeśli ustawione, lokalizacja będzie wykrywana na podstawie tego nagłówka HTTP.',
         'route_prefixing'            => 'Prefixy w ścieżkach',
         'route_prefixing_comment'    => 'Włącza prefixy językowe w ścieżkach URL.',
         'prefer_user_session'           => 'Preferuj ustawienia sesji użytkownika',
         'prefer_user_session_comment'   => 'Jeśli włączone, język ustawiony w sesji użytkownika będzie miał wyższy priorytet niż preferowany język przeglądarki. Jeśli wyłączone, preferowany język będzie wykrywany za każdym razem gdy użytkownik wchodzi na stronę.',
         'homepage_redirect'             => 'Homepage redirect',
         'homepage_redirect_comment'     => 'Jeśli włączone, kod języka będzie dodawany do adresu URL strony startowej.',
+        'force_prefix'                  => 'Wymuś prefix języka',
+        'force_prefix_comment'          => 'Jeśli włączone, wszystkie żądania GET do adresów bez kodu języka otrzymają prefix języka.',
         'localepicker_desc'             => 'Pokazuje listę linków do zmiany języka.'
     ],
     'permissions' => [
