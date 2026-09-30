@@ -14,15 +14,21 @@ A Winter CMS plugin extending [Winter.Translate](https://github.com/wintercms/wn
 
 ## Identity is not free to choose
 
-Winter derives a plugin's identity from the directory it sits in, not from `composer.json`. The install path must equal the declared namespace, **with no separators**, or the plugin is cloned, excluded from git, reported `OK` by `workspaces.sh check` and **never loaded** — with no warning anywhere.
+Winter does not read `composer.json` to learn what a plugin is. `PluginManager::getVendorAndPluginNames()` walks `plugins/*/*/`, and for each `Plugin.php` it finds builds a class name out of the two directory names and asks for it. A path that cannot produce the class the file declares gives a plugin that is cloned, excluded from git, reported `OK` by `workspaces.sh check` and **never loaded** — with no warning anywhere.
 
-The separator rule is the part that bites. `PluginManager::getPluginNamespaces()` builds `\Cubic\translate-extended` from the directory and passes it to `class_exists()`, but PHP class names cannot contain a hyphen, so the lookup fails and `loadPlugin()` returns `null` silently. The path is therefore `plugins/cubic/translateextended` — one lowercase word, matching `Cubic\TranslateExtended`, and matching the `installer-name` in `composer.json`. A multi-word plugin name is never hyphenated, camel-cased or snake-cased on disk.
+Two things about that rule are easy to get wrong.
+
+**The directory names are used verbatim, so every segment must be a legal PHP identifier.** `Str::normalizeClassName()` only strips a leading backslash; it does not StudlyCase and it does not remove separators. So `plugins/cubic/translate-extended` is asked for as `\cubic\translate-extended\Plugin` — note the directory's own lower case — and no class can satisfy that. A hyphen, a dot, a space, a `+` or a leading digit all break it. Underscores and non-ASCII letters do not. The rule applies to the **vendor** directory too, not only to the plugin's own.
+
+**Case does not matter.** Class names in PHP are case-insensitive, so `plugins/cubic/TranslateExtended` resolves exactly as well as the lowercase form. What matters is only which characters are legal.
+
+The path is therefore `plugins/cubic/translateextended`, matching the namespace and the `installer-name` in `composer.json`. A multi-word plugin name is never hyphenated on disk.
 
 The composer vendor and the GitHub organisation (`cubicltd`) are independent. Renaming one does not rename the other.
 
 ## Rules for this repository
 
-- **Never put `winter/wn-translate-plugin` in `require`.** The core's merge-plugin folds plugin requires into the root package, so Composer would install a zipball over the working tree in `plugins/winter/translate`. The runtime dependency is declared by `Plugin::$require` and nothing else.
+- **Never put `winter/wn-translate-plugin` in `require`.** The core's merge-plugin folds a plugin's `require` into the root package, so Composer would resolve `winter/wn-translate-plugin` and install it — and the install path is `plugins/winter/translate`, which is a live clone here. `FileDownloader::install()` **empties** that directory first, `.git` included, and unpacks the dist zipball into it. The runtime dependency is declared by `Plugin::$require` and nothing else.
 - **Do not hand-edit compiled or generated output.** There is none here; this is a plain plugin with no build step.
 - **`updates/version.yaml` keys carry no `v`; the `updates/` directory does.** `2.0.0:` points at `v2.0.0/rename_settings_code.php`. Quoted keys matter where a key could parse as a float.
 - **PHP 8.1 is the floor.** `rector.php` enforces it and `rector process --dry-run` is expected to come back empty.
@@ -42,9 +48,11 @@ Three pieces of state outlive the application that a test tears down, and each o
 
 - **`System\Behaviors\SettingsModel::$instances`** is a static array. Without clearing it, a setting written by one test is still readable by the next — and it presents as a routing bug, because that is where the settings are read.
 - **`Winter\Translate\Classes\Translator`** is a singleton, so a locale set by one test is still active in the next.
-- **`PluginManager::$noInit`** is set to `true` during the first bootstrap of the process, on the branch that fires when the migration table does not exist yet, and nothing ever sets it back. From then on `bootPlugin()` returns immediately for any plugin that is not elevated, so a test that depends on the plugin booting silently tests nothing at all.
+- **`PluginManager::$noInit`** is a static kill-switch that `ServiceProvider::registerPrivilegedActions()` sets to `true` for a restricted bootstrap — the updates, install and migrate commands, or any console run where the migration table does not exist yet. Nothing ever sets it back, and `registerPrivilegedActions()` re-evaluates it on **every** application bootstrap, so the first one that satisfies a condition decides it for the rest of the process. It is a console-only path, and on a database that already has its migration table it never fires — so in the dev environment the reset below is defensive. It fires on a fresh database, which is what CI and a first install get. `plugins/cubic/backend/tests/BackendTestCase.php` resets it for the same reason.
 
 A fourth, not a static: a test that needs a specific request has to put a **real** one in place, replacing both the container binding and the facade. `Request::swap()` alone is not enough for the `request()` helper, which reads the binding; and a URI cannot be changed after the request exists, because the base URL has already been resolved from what it was built with.
+
+The `$noInit` reset happens *after* `PluginTestCase::setUp()` has already called `instantiatePlugin()`, so on a database where the flag fires, the plugin was never registered or booted and setting it false afterwards does not put that back. `PluginRoutingTest` does not rely on it: it discards the routes and calls `bootPlugin()` itself, which is a no-op unless the flag is false first. That is why the routing tests are the ones that prove the reset matters.
 
 ## Tests
 
