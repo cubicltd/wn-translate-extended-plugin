@@ -8,13 +8,13 @@ A Winter CMS plugin extending [Winter.Translate](https://github.com/wintercms/wn
 
 **Conventional Commits start at `2.0.0` and apply to nothing above it.** Before that line the log reads the way the original project wrote.
 
-`2.0.0` is also the release that renamed the composer package, the PHP namespace and the settings code. Those three are why it is a major version. It also changes behaviour in two places, both in `BrowserMatching`: a bare `*` no longer selects a locale, and a bare `q=0` is honoured as a refusal. `notes/translate-extended.md` in the environment repository has the detail.
+`2.0.0` is also the release that renamed the composer package, the PHP namespace and the settings code. Those three are why it is a major version. It also changes behaviour in two places, both in `BrowserMatching`: a bare `*` no longer selects a locale, and a bare `q=0` is honoured as a refusal.
 
 **Do not describe the upstream as abandoned.** The project lives in a self-hosted Git at `git.anzui.dev/wintercms/wn-translate-extended` and is published on Packagist as `studiobosco/wn-translate-extended`. The GitHub repository of the same name does not resolve, which is not the same thing. Our import was taken from `f788229`, the commit the Packagist publication pointed at. The `replace` in `composer.json` is what redirects anything still requiring the old package.
 
 ## Identity is not free to choose
 
-Winter does not read `composer.json` to learn what a plugin is. `PluginManager::getVendorAndPluginNames()` walks `plugins/*/*/`, and for each `Plugin.php` it finds builds a class name out of the two directory names and asks for it. A path that cannot produce the class the file declares gives a plugin that is cloned, excluded from git, reported `OK` by `workspaces.sh check` and **never loaded** — with no warning anywhere.
+Winter does not read `composer.json` to learn what a plugin is. `PluginManager::getVendorAndPluginNames()` walks `plugins/*/*/`, and for each `Plugin.php` it finds builds a class name out of the two directory names and asks for it. A path that cannot produce the class the file declares gives a plugin that is cloned, excluded from git and **never loaded** — with no warning anywhere.
 
 Two things about that rule are easy to get wrong.
 
@@ -37,7 +37,7 @@ The composer vendor and the GitHub organisation (`cubicltd`) are independent. Re
 ## Traps specific to this plugin
 
 - **`BrowserMatching` reads `$_SERVER` directly**, not through Laravel's request, so a test cannot drive it with `$this->withServerVariables()`. Set and restore `$_SERVER` by hand.
-- **`Settings::$settingsCode` is a database key**, the primary key of a `system_settings` row. Renaming it orphans stored settings unless a migration moves the row; `updates/v2.0.0/rename_settings_code.php` is the precedent.
+- **`Settings::$settingsCode` is a database key**, the primary key of a `system_settings` row. Renaming it orphans stored settings unless a migration moves the row; `updates/v2.0.0/rename_settings_code.php` is the precedent, and it has to cope with the target key already existing — which happens when the site serves a request between the deploy and `winter:up`.
 - **`Translator::isconfigured()` is called in the wrong case.** PHP method names are case-insensitive so it works, and Rector leaves it alone — `RenameMethodRector` is not part of any standard set, it needs a `rector/rename` entry. Do not write tests that assert the lowercase spelling, and do not expect the modernisation to have fixed it.
 - **`ExtendedLocalePicker` extends a frozen first-party class.** Do not mark it `final` and do not try to change the parent's `makeLocaleUrlFromPage()`.
 - **`Plugin::registerRouting()` reads the global request and ignores the middleware-style argument**, and it only runs at all when `PluginManager::$noInit` is false. Both are handled in `tests/TranslateExtendedTestCase`; see the isolation note below.
@@ -48,11 +48,17 @@ Three pieces of state outlive the application that a test tears down, and each o
 
 - **`System\Behaviors\SettingsModel::$instances`** is a static array. Without clearing it, a setting written by one test is still readable by the next — and it presents as a routing bug, because that is where the settings are read.
 - **`Winter\Translate\Classes\Translator`** is a singleton, so a locale set by one test is still active in the next.
-- **`PluginManager::$noInit`** is a static kill-switch that `ServiceProvider::registerPrivilegedActions()` sets to `true` for a restricted bootstrap — the updates, install and migrate commands, or any console run where the migration table does not exist yet. Nothing ever sets it back, and `registerPrivilegedActions()` re-evaluates it on **every** application bootstrap, so the first one that satisfies a condition decides it for the rest of the process. It is a console-only path, and on a database that already has its migration table it never fires — so in the dev environment the reset below is defensive. It fires on a fresh database, which is what CI and a first install get. `plugins/cubic/backend/tests/BackendTestCase.php` resets it for the same reason.
+- **`PluginManager::$noInit`** is a static kill-switch that `ServiceProvider::registerPrivilegedActions()` sets to `true` for a restricted bootstrap — the updates, install and migrate commands, or any console run where the migration table does not exist yet. Nothing ever sets it back, and `registerPrivilegedActions()` re-evaluates it on **every** application bootstrap, so the first one that satisfies a condition decides it for the rest of the process. It is a console-only path, and on a database that already has its migration table it never fires — so in the dev environment the reset below is defensive. It fires on a fresh database, which is what CI and a first install get.
 
 A fourth, not a static: a test that needs a specific request has to put a **real** one in place, replacing both the container binding and the facade. `Request::swap()` alone is not enough for the `request()` helper, which reads the binding; and a URI cannot be changed after the request exists, because the base URL has already been resolved from what it was built with.
 
 The `$noInit` reset happens *after* `PluginTestCase::setUp()` has already called `instantiatePlugin()`, so on a database where the flag fires, the plugin was never registered or booted and setting it false afterwards does not put that back. `PluginRoutingTest` does not rely on it: it discards the routes and calls `bootPlugin()` itself, which is a no-op unless the flag is false first. That is why the routing tests are the ones that prove the reset matters.
+
+## The quality pattern accepts an invalid q-value as a refusal
+
+The pattern is `0(?:\.\d{0,3})?|1(?:\.0{0,3})?` and the regex is **unanchored**, so `0` alone matches whatever follows it. That was the fix — a bare `q=0` now parses as zero instead of falling through to the `1.0` default — but it also means a malformed q-value beginning with `0` is now read as *refuse*, where before it read as *prefer at maximum*: `q=00`, `q=01`, `q=0a`, `q=0.5x`.
+
+RFC 9110 §12.4.2 defines `qvalue` as `"0" [ "." 0*3DIGIT ] / "1" [ "." 0*3("0") ]`, so all of those are invalid and no conformant client emits them. The general rule for an unparseable header is to ignore it, and this moves the opposite way. It is the one behavioural edge of the `2.0.0` fix that is not exactly what it set out to do; nothing here treats it as a bug to be fixed urgently, and a real one would need the whole tag bounded before the alternation.
 
 ## Tests
 
