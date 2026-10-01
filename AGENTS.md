@@ -37,7 +37,7 @@ The composer vendor and the GitHub organisation (`cubicltd`) are independent. Re
 ## Traps specific to this plugin
 
 - **`BrowserMatching` reads `$_SERVER` directly**, not through Laravel's request, so a test cannot drive it with `$this->withServerVariables()`. Set and restore `$_SERVER` by hand.
-- **`Settings::$settingsCode` is a database key**, the primary key of a `system_settings` row. Renaming it orphans stored settings unless a migration moves the row; `updates/v2.0.0/rename_settings_code.php` is the precedent.
+- **`Settings::$settingsCode` is a database key**, the primary key of a `system_settings` row. Renaming it orphans stored settings unless a migration moves the row; `updates/v2.0.0/rename_settings_code.php` is the precedent, and it has to cope with the target key already existing — which happens when the site serves a request between the deploy and `winter:up`.
 - **`Translator::isconfigured()` is called in the wrong case.** PHP method names are case-insensitive so it works, and Rector leaves it alone — `RenameMethodRector` is not part of any standard set, it needs a `rector/rename` entry. Do not write tests that assert the lowercase spelling, and do not expect the modernisation to have fixed it.
 - **`ExtendedLocalePicker` extends a frozen first-party class.** Do not mark it `final` and do not try to change the parent's `makeLocaleUrlFromPage()`.
 - **`Plugin::registerRouting()` reads the global request and ignores the middleware-style argument**, and it only runs at all when `PluginManager::$noInit` is false. Both are handled in `tests/TranslateExtendedTestCase`; see the isolation note below.
@@ -53,6 +53,12 @@ Three pieces of state outlive the application that a test tears down, and each o
 A fourth, not a static: a test that needs a specific request has to put a **real** one in place, replacing both the container binding and the facade. `Request::swap()` alone is not enough for the `request()` helper, which reads the binding; and a URI cannot be changed after the request exists, because the base URL has already been resolved from what it was built with.
 
 The `$noInit` reset happens *after* `PluginTestCase::setUp()` has already called `instantiatePlugin()`, so on a database where the flag fires, the plugin was never registered or booted and setting it false afterwards does not put that back. `PluginRoutingTest` does not rely on it: it discards the routes and calls `bootPlugin()` itself, which is a no-op unless the flag is false first. That is why the routing tests are the ones that prove the reset matters.
+
+## The quality pattern accepts an invalid q-value as a refusal
+
+The pattern is `0(?:\.\d{0,3})?|1(?:\.0{0,3})?` and the regex is **unanchored**, so `0` alone matches whatever follows it. That was the fix — a bare `q=0` now parses as zero instead of falling through to the `1.0` default — but it also means a malformed q-value beginning with `0` is now read as *refuse*, where before it read as *prefer at maximum*: `q=00`, `q=01`, `q=0a`, `q=0.5x`.
+
+RFC 9110 §12.4.2 defines `qvalue` as `"0" [ "." 0*3DIGIT ] / "1" [ "." 0*3("0") ]`, so all of those are invalid and no conformant client emits them. The general rule for an unparseable header is to ignore it, and this moves the opposite way. It is the one behavioural edge of the `2.0.0` fix that is not exactly what it set out to do; nothing here treats it as a bug to be fixed urgently, and a real one would need the whole tag bounded before the alternation.
 
 ## Tests
 
